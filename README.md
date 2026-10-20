@@ -30,3 +30,31 @@ Algorithms:
 **Nearest Neighbour + 2-opt/Or-opt (larger instances)**: Builds an initial tour and improves it by rearranging stops. A time-limited search keeps the best tour found.
 
 The simulator displays the delivery route, visit order, total distance, estimated travel time, and algorithm execution time.
+
+## Implementation and Output
+
+The SPPG Simulator is implemented in Python using OSMnx, NetworkX, Streamlit, and Folium. OSMnx retrieves Surabaya’s drivable road network and school locations from OpenStreetMap (OSM), while Streamlit and Folium provide an interactive map. Downloaded data is cached locally to reduce repeated downloads.
+
+Users select an SPPG location by clicking the map and set a delivery radius (x) km. Schools within that radius, measured by straight-line distance, are selected and snapped to their nearest road vertices. The road network is represented as a weighted directed graph that accounts for one-way streets. Dijkstra’s algorithm calculates the shortest road distances and constructs a directed distance matrix. The solver then determines the school visiting order using Held–Karp for smaller instances or Nearest Neighbour with local-search improvements for larger instances.
+
+The resulting route is expanded into actual road paths and displayed on the map. The simulator reports the school visiting order, total route distance, estimated travel time, and solver execution time. Distance is calculated from road-segment lengths, while travel time is estimated using speed limits or default speeds based on road types, without live traffic data.
+
+Test Configuration:
+
+* SPPG location: [Name or coordinates]
+
+* Delivery radius: [(x)] km
+
+* Number of schools selected: [(k)]
+
+* Solver used: [Held–Karp / heuristic]
+
+* Total route distance: [Result]
+
+* Estimated travel time: [Result]
+
+* Solver execution time: [Result]
+
+<img width="1876" height="856" alt="image" src="https://github.com/user-attachments/assets/200299d3-c8e2-4666-bff0-ef7beba0f598" />
+
+*map showing the selected SPPG location, delivery radius, school locations, and suggested delivery route.*

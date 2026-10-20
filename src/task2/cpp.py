@@ -5,7 +5,6 @@ def create_sample_graph():
     Creates a sample weighted, connected, undirected graph for testing CPP.
     """
     G = nx.Graph()
-    # Add weighted edges (u, v, weight)
     edges = [
         ('A', 'B', 4),
         ('A', 'C', 2),
@@ -22,11 +21,8 @@ def create_sample_graph():
 def solve_chinese_postman(G):
     """
     Solves the Chinese Postman Problem for an undirected connected graph G.
-    Returns:
-        eulerian_circuit: List of tuples representing the optimal edge traversal route.
-        total_cost: Total weight/distance of the complete tour.
     """
-    # Step 1: Check if graph is already Eulerian (all nodes have even degrees)
+    # Step 1: Check if graph is already Eulerian
     if nx.is_eulerian(G):
         print("Graph is Eulerian! Finding direct Eulerian circuit.")
         total_cost = sum(d['weight'] for u, v, d in G.edges(data=True))
@@ -58,26 +54,28 @@ def solve_chinese_postman(G):
         path_info = odd_pairs_paths.get((u, v)) or odd_pairs_paths.get((v, u))
         path = path_info['path']
         
-        # Add duplicate edges along the shortest path
         for i in range(len(path) - 1):
             n1, n2 = path[i], path[i + 1]
             wt = G[n1][n2]['weight']
             augmented_graph.add_edge(n1, n2, weight=wt)
 
-    # Step 6: Find Eulerian circuit in the augmented MultiGraph
+    # Step 6: Find Eulerian circuit and calculate safe total cost
     eulerian_circuit = list(nx.eulerian_circuit(augmented_graph))
     
-    # Calculate total weight (original edges + duplicated edges)
-    total_cost = sum(d['weight'] for u, v, d in augmented_graph.edges(data=True))
+    # Safely sum weights across MultiGraph edges
+    total_cost = 0
+    for u, v in augmented_graph.edges():
+        # MultiGraph edges contain a dictionary of keys mapping to edge attributes
+        edge_data = augmented_graph[u][v]
+        for key in edge_data:
+            total_cost += edge_data[key].get('weight', 0)
 
     return eulerian_circuit, total_cost
 
 if __name__ == "__main__":
-    # Load test graph
     graph = create_sample_graph()
-    print(f"Initial Graph: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
+    print(f"Original Graph: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
     
-    # Run Chinese Postman Algorithm
     circuit, total_distance = solve_chinese_postman(graph)
     
     print("\n--- Chinese Postman Optimal Circuit ---")

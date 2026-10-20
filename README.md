@@ -17,7 +17,7 @@ The project applies these problems to real-world scenarios, including MBG meal d
 
 ## Algorithms
 
-###Travelling Salesman Problem (TSP)###
+### Travelling Salesman Problem (TSP) 
 
 The Travelling Salesman Problem (TSP) finds the shortest closed route that visits every selected school exactly once and returns to the SPPG. This project applies TSP to MBG mealbox delivery in Surabaya using a weighted directed road network, where edge weights represent road distances and may differ by direction.
 

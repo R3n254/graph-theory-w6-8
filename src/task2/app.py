@@ -1,171 +1,172 @@
+"""
+Task 2 - Dump Truck Route Simulator (Chinese Postman Problem) on Surabaya.
+
+Run:  streamlit run app.py
+
+How to use:
+  1. Click anywhere on the map to place the dump truck base (or type lat/lon in the sidebar).
+  2. Set the radius (km) in the sidebar.
+  3. Press "Find CPP route".
+"""
+
 import time
-import streamlit as st
+
+import folium
 import networkx as nx
 import osmnx as ox
-import folium
+import streamlit as st
 from streamlit_folium import st_folium
 
-# Page Configuration
-st.set_page_config(page_title="DLH Surabaya Garbage Collection - CPP Simulator", layout="wide")
+from cpp_solver import (
+    estimated_minutes,
+    prepare_graph,
+    solve_directed_cpp,
+)
 
-st.title("🚚 DLH Surabaya Dump Truck Route Simulator (Task 2: CPP)")
-st.markdown("Simulate efficient public garbage collection routes using the **Chinese Postman Problem** algorithm on road networks in Surabaya.")
+# Surabaya city center (Tugu Pahlawan area) as the default base.
+DEFAULT_LAT, DEFAULT_LON = -7.2459, 112.7378
+MAX_RADIUS_KM = 6.0
 
-# Sidebar Controls for Simulation Parameters
-st.sidebar.header("Simulator Configuration")
-base_lat = st.sidebar.number_input("Base Latitude", value=-7.2819, format="%.5f") 
-base_lon = st.sidebar.number_input("Base Longitude", value=112.7937, format="%.5f")
-radius_km = st.sidebar.slider("Delivery Radius ($x$ km)", min_value=0.2, max_value=1.5, value=0.3, step=0.1)
-truck_speed_kmh = st.sidebar.slider("Average Truck Speed (km/h)", min_value=10, max_value=40, value=20)
+st.set_page_config(page_title="Dump Truck CPP - Surabaya", layout="wide")
+st.title("Dump Truck Route Simulator (Chinese Postman Problem)")
 
-run_simulation = st.sidebar.button("Run CPP Simulation", type="primary")
 
-@st.cache_data
-def fetch_road_network(lat, lon, dist):
-    """Generates a robust local neighborhood grid with geographic coordinates for mapping."""
-    grid_size = 6
-    G_mock = nx.grid_2d_graph(grid_size, grid_size)
-    G_mock = nx.convert_node_labels_to_integers(G_mock)
-    
-    # Assign realistic latitude and longitude coordinates centered around base_lat, base_lon
-    node_coords = {}
-    for idx, node in enumerate(G_mock.nodes()):
-        r = idx // grid_size
-        c = idx % grid_size
-        # Spread grid out by ~100 meters per step
-        n_lat = lat + (r - grid_size/2) * 0.001
-        n_lon = lon + (c - grid_size/2) * 0.001
-        node_coords[node] = (n_lat, n_lon)
-        
-    G_directed = nx.DiGraph()
-    for u, v in G_mock.edges():
-        G_directed.add_edge(u, v, length=120.0)
-        G_directed.add_edge(v, u, length=120.0)
-        
-    G_undirected = G_directed.to_undirected()
-    for u, v, d in G_undirected.edges(data=True):
-        d['length'] = 120.0
-        
-    return G_directed, G_undirected, node_coords
+# --------------------------------------------------------------------------
+# Data loading (cached so it only downloads once)
+# --------------------------------------------------------------------------
 
-def get_edge_length(graph, u, v):
-    """Safely extracts edge length from graph."""
-    data = graph.get_edge_data(u, v)
-    if data is None:
-        return 120.0
-    if isinstance(data, dict):
-        if 'length' in data:
-            return float(data['length'])
-        for k, attrs in data.items():
-            if isinstance(attrs, dict) and 'length' in attrs:
-                return float(attrs['length'])
-    return 120.0
+@st.cache_resource(show_spinner="Downloading road network around the base (first time only)...")
+def load_roads(lat, lon, dist_m):
+    """Directed drive network around (lat, lon). Cached by rounded coordinates."""
+    ox.settings.use_cache = True
+    ox.settings.log_console = False
+    # Only the road classes we need keeps the download small and fast.
+    cf = '["highway"~"trunk|primary|secondary|tertiary|trunk_link|primary_link|secondary_link|tertiary_link"]'
+    return ox.graph_from_point((lat, lon), dist=dist_m, custom_filter=cf,
+                               network_type="drive", simplify=True, retain_all=True)
 
-def solve_chinese_postman_osm(G):
-    """Solves CPP on a NetworkX graph with edge lengths."""
-    start_time = time.time()
-    
-    if nx.is_eulerian(G):
-        eulerian_circuit = list(nx.eulerian_circuit(G))
-        total_cost = sum(get_edge_length(G, u, v) for u, v in G.edges())
-        exec_time = time.time() - start_time
-        return eulerian_circuit, total_cost, exec_time
 
-    odd_nodes = [v for v, degree in G.degree() if degree % 2 != 0]
+# --------------------------------------------------------------------------
+# Sidebar controls
+# --------------------------------------------------------------------------
 
-    odd_pairs_paths = {}
-    for u in odd_nodes:
-        lengths, paths = nx.single_source_dijkstra(G, u, weight='length')
-        for v in odd_nodes:
-            if u != v and (v, u) not in odd_pairs_paths:
-                odd_pairs_paths[(u, v)] = {'distance': lengths[v], 'path': paths[v]}
+if "base" not in st.session_state:
+    st.session_state.base = (DEFAULT_LAT, DEFAULT_LON)
+if "result" not in st.session_state:
+    st.session_state.result = None
 
-    matching_graph = nx.Graph()
-    for (u, v), data in odd_pairs_paths.items():
-        matching_graph.add_edge(u, v, weight=data['distance'])
+with st.sidebar:
+    st.header("Settings")
+    radius_km = st.slider("Delivery radius x (km)", 0.5, MAX_RADIUS_KM, 1.5, 0.5)
+    speed = st.number_input("Assumed truck speed (km/h)", 5.0, 80.0, 30.0, 1.0,
+                            help="Used only for the estimated travel time.")
+    st.caption("Base location (click the map to change it):")
+    lat_in = st.number_input("Latitude", value=float(st.session_state.base[0]), format="%.6f")
+    lon_in = st.number_input("Longitude", value=float(st.session_state.base[1]), format="%.6f")
+    if (lat_in, lon_in) != tuple(st.session_state.base):
+        st.session_state.base = (lat_in, lon_in)
+        st.session_state.result = None
+    run = st.button("Find CPP route", type="primary", use_container_width=True)
 
-    min_matching = nx.algorithms.matching.min_weight_matching(matching_graph, weight='weight')
+base_lat, base_lon = st.session_state.base
 
-    augmented_graph = nx.MultiGraph(G)
-    for u, v in min_matching:
-        path_info = odd_pairs_paths.get((u, v)) or odd_pairs_paths.get((v, u))
-        path = path_info['path']
-        for i in range(len(path) - 1):
-            n1, n2 = path[i], path[i + 1]
-            wt = get_edge_length(G, n1, n2)
-            augmented_graph.add_edge(n1, n2, length=wt)
+# --------------------------------------------------------------------------
+# Solve
+# --------------------------------------------------------------------------
 
-    eulerian_circuit = list(nx.eulerian_circuit(augmented_graph))
-    
-    total_cost = 0
-    for u, v, data in augmented_graph.edges(data=True):
-        total_cost += float(data.get('length', 120.0))
+if run:
+    try:
+        with st.spinner("Loading roads..."):
+            # Round the center so nearby clicks reuse the same download; add 1 km margin.
+            G = load_roads(round(base_lat, 3), round(base_lon, 3), int(MAX_RADIUS_KM * 1000 + 1000))
+            H, base_node = prepare_graph(G, base_lat, base_lon, radius_km)
+        with st.spinner("Solving the Chinese Postman Problem..."):
+            res = solve_directed_cpp(H, base_node)
+        res["H"] = H
+        res["base_node"] = base_node
+        res["radius_km"] = radius_km
+        res["speed"] = speed
+        st.session_state.result = res
+    except Exception as e:  # show a readable message instead of a stack trace
+        st.session_state.result = None
+        st.error(f"Could not compute a route: {e}")
 
-    exec_time = time.time() - start_time
-    return eulerian_circuit, total_cost, exec_time
+res = st.session_state.result
 
-if run_simulation:
-    with st.spinner("Simulating garbage collection route and mapping optimal CPP path..."):
-        try:
-            G_directed, G_undirected, node_coords = fetch_road_network(base_lat, base_lon, radius_km)
-            circuit, total_distance_meters, execution_time = solve_chinese_postman_osm(G_undirected)
-            
-            total_distance_km = total_distance_meters / 1000.0
-            estimated_time_hours = total_distance_km / truck_speed_kmh
-            estimated_time_mins = estimated_time_hours * 60
+# --------------------------------------------------------------------------
+# Map
+# --------------------------------------------------------------------------
 
-            st.success("Simulation Complete Successfully!")
-            col1, col2, col3, col4 = st.columns(4)
-            col1.metric("Total Distance", f"{total_distance_km:.2f} km")
-            col2.metric("Est. Travel Time", f"{estimated_time_mins:.1f} mins")
-            col3.metric("Solver Execution Time", f"{execution_time:.4f} secs")
-            col4.metric("Graph Nodes / Edges", f"{G_undirected.number_of_nodes()} / {G_undirected.number_of_edges()}")
+m = folium.Map(location=[base_lat, base_lon], zoom_start=14, tiles="OpenStreetMap")
+folium.Circle([base_lat, base_lon], radius=radius_km * 1000, color="#1f77b4",
+              fill=True, fill_opacity=0.05, weight=2).add_to(m)
 
-            st.subheader("🗺️ Suggested Route Map Overlaid on Road Network")
-            
-            # Create Folium Map centered at base coordinates
-            m = folium.Map(location=[base_lat, base_lon], zoom_start=16)
-            
-            # Draw background network streets (gray lines)
-            for u, v in G_undirected.edges():
-                coord_u = node_coords[u]
-                coord_v = node_coords[v]
-                folium.PolyLine(
-                    locations=[coord_u, coord_v],
-                    color="#999999",
-                    weight=3,
-                    opacity=0.6
-                ).add_to(m)
+if res:
+    H = res["H"]
+    # Roads that must be covered (grey), then the route drawn in order in a colour gradient.
+    for u, v, d in H.edges(data=True):
+        geom = d.get("geometry")
+        if geom is not None:
+            pts = [(lat, lon) for lon, lat in geom.coords]
+        else:
+            pts = [(H.nodes[u]["y"], H.nodes[u]["x"]), (H.nodes[v]["y"], H.nodes[v]["x"])]
+        folium.PolyLine(pts, color="#999999", weight=3, opacity=0.6).add_to(m)
 
-            # Draw optimal CPP traversal route (bright red highlighted polyline)
-            route_coords = [node_coords[circuit[0][0]]]
-            for u, v in circuit:
-                route_coords.append(node_coords[v])
+    steps = res["route"]
+    n = len(steps)
+    for i, s in enumerate(steps):
+        geom = s["geometry"]
+        if geom is not None:
+            pts = [(lat, lon) for lon, lat in geom.coords]
+        else:
+            pts = [(H.nodes[s["from"]]["y"], H.nodes[s["from"]]["x"]),
+                   (H.nodes[s["to"]]["y"], H.nodes[s["to"]]["x"])]
+        # Colour goes from blue (start) to red (end); repeated roads are dashed.
+        frac = i / max(n - 1, 1)
+        color = "#%02x%02x%02x" % (int(255 * frac), 60, int(255 * (1 - frac)))
+        folium.PolyLine(
+            pts, color=color, weight=5, opacity=0.9,
+            dash_array="8" if s["repeated"] else None,
+            tooltip=f"#{i + 1}: {s['name']} ({s['length_m']:.0f} m)",
+        ).add_to(m)
 
-            folium.PolyLine(
-                locations=route_coords,
-                color="#e74c3c",
-                weight=6,
-                opacity=0.9,
-                tooltip="Optimal Garbage Collection Route (CPP)"
-            ).add_to(m)
+folium.Marker([base_lat, base_lon], tooltip="Dump truck base",
+              icon=folium.Icon(color="red", icon="truck", prefix="fa")).add_to(m)
 
-            # Add Depot / Base Marker
-            folium.Marker(
-                [base_lat, base_lon],
-                popup="DLH Dump Truck Depot",
-                icon=folium.Icon(color="red", icon="truck", prefix="fa")
-            ).add_to(m)
+out = st_folium(m, height=520, use_container_width=True, returned_objects=["last_clicked"])
+if out and out.get("last_clicked"):
+    new = (round(out["last_clicked"]["lat"], 6), round(out["last_clicked"]["lng"], 6))
+    if new != tuple(st.session_state.base):
+        st.session_state.base = new
+        st.session_state.result = None
+        st.rerun()
 
-            st_folium(m, width=1100, height=500, returned_objects=[])
+# --------------------------------------------------------------------------
+# Results
+# --------------------------------------------------------------------------
 
-            st.subheader("📋 Street Traversal Order (Circuit Sequence)")
-            st.write(f"Showing first {min(30, len(circuit))} of {len(circuit)} total route segments:")
-            
-            route_str = " $\\rightarrow$ ".join([f"{u} $\\rightarrow$ {v}" for u, v in circuit[:30]])
-            st.markdown(f"`{route_str}`")
+if res:
+    total_km = res["total_m"] / 1000
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Total distance", f"{total_km:.2f} km")
+    c2.metric("Estimated travel time", f"{estimated_minutes(res['total_m'], res['speed']):.0f} min")
+    c3.metric("CPP solver time", f"{res['solver_seconds'] * 1000:.1f} ms")
+    c4.metric("Repeated roads", f"{res['repeated_m'] / 1000:.2f} km")
+    st.caption(
+        f"{res['n_edges']} road segments to cover, {res['required_m'] / 1000:.2f} km of roads, "
+        f"travel time assumes a constant {res['speed']:.0f} km/h. "
+        "Blue to red = order of travel; dashed = a road driven again."
+    )
 
-        except Exception as e:
-            st.error(f"An error occurred during simulation: {e}")
+    st.subheader("Street traversal order")
+    rows = []
+    for i, s in enumerate(res["route"], start=1):
+        rows.append({
+            "Step": i,
+            "Street": s["name"],
+            "Distance (m)": round(s["length_m"]),
+            "Revisit": "yes" if s["repeated"] else "",
+        })
+    st.dataframe(rows, use_container_width=True, hide_index=True)
 else:
-    st.info("👈 Adjust your parameters in the sidebar and click **Run CPP Simulation** to start.")
+    st.info("Click the map to place the base, choose a radius, then press **Find CPP route**.")

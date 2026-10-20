@@ -69,13 +69,13 @@ Test Configuration:
 - Python 3.10 or newer
 - Internet connection (the first run downloads the Surabaya road network and school data from OpenStreetMap)
 
-### 1. Clone the repository
+### 1. Open the TSP folder
+Download the `tsp-sppg/` folder (or the repository as a ZIP from GitHub and extract it), then open a terminal inside it:
 ```bash
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <your-repo>
+cd tsp-sppg
 ```
 
-### 2. (Optional) Create a virtual environment
+### 2. Create a virtual environment
 Windows (PowerShell):
 ```powershell
 python -m venv venv

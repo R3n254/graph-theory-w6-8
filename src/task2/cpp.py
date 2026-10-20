@@ -2,17 +2,19 @@ import networkx as nx
 
 def create_sample_graph():
     """
-    Creates a sample weighted, connected, undirected graph for testing CPP.
+    Creates the exact sample weighted graph shown in Task 2 illustration (Image 1).
+    Nodes: A, B, C, D, E
+    Edges and Weights:
+      C-A: 6, A-D: 2, D-B: 7, B-C: 12, B-E: 17, D-E: 18
     """
     G = nx.Graph()
     edges = [
-        ('A', 'B', 4),
-        ('A', 'C', 2),
-        ('B', 'C', 1),
-        ('B', 'D', 5),
-        ('C', 'D', 8),
-        ('C', 'E', 10),
-        ('D', 'E', 2)
+        ('C', 'A', 6),
+        ('A', 'D', 2),
+        ('D', 'B', 7),
+        ('B', 'C', 12),
+        ('B', 'E', 17),
+        ('D', 'E', 18)
     ]
     for u, v, w in edges:
         G.add_edge(u, v, weight=w)
@@ -22,17 +24,17 @@ def solve_chinese_postman(G):
     """
     Solves the Chinese Postman Problem for an undirected connected graph G.
     """
-    # Step 1: Check if graph is already Eulerian
+    # 1. Check if graph is already Eulerian
     if nx.is_eulerian(G):
         print("Graph is Eulerian! Finding direct Eulerian circuit.")
         total_cost = sum(d['weight'] for u, v, d in G.edges(data=True))
         return list(nx.eulerian_circuit(G)), total_cost
 
-    # Step 2: Identify all nodes with odd degree
+    # 2. Identify odd degree vertices
     odd_nodes = [v for v, degree in G.degree() if degree % 2 != 0]
-    print(f"Nodes with odd degree ({len(odd_nodes)}): {odd_nodes}")
+    print(f"Vertices with odd degrees ({len(odd_nodes)}): {odd_nodes}")
 
-    # Step 3: Find shortest path distances between all pairs of odd nodes
+    # 3. Find shortest paths between all pairs of odd nodes
     odd_pairs_paths = {}
     for u in odd_nodes:
         lengths, paths = nx.single_source_dijkstra(G, u, weight='weight')
@@ -40,32 +42,29 @@ def solve_chinese_postman(G):
             if u != v and (v, u) not in odd_pairs_paths:
                 odd_pairs_paths[(u, v)] = {'distance': lengths[v], 'path': paths[v]}
 
-    # Step 4: Create complete graph of odd nodes to find minimum weight matching
+    # 4. Construct complete matching graph for odd nodes and find min weight matching
     matching_graph = nx.Graph()
     for (u, v), data in odd_pairs_paths.items():
         matching_graph.add_edge(u, v, weight=data['distance'])
 
     min_matching = nx.algorithms.matching.min_weight_matching(matching_graph, weight='weight')
-    print(f"Optimal pairings to duplicate: {list(min_matching)}")
+    print(f"Optimal pairings of odd nodes to duplicate: {list(min_matching)}")
 
-    # Step 5: Construct augmented MultiGraph by duplicating edges along shortest paths
+    # 5. Create augmented MultiGraph by duplicating edges along shortest matching paths
     augmented_graph = nx.MultiGraph(G)
     for u, v in min_matching:
         path_info = odd_pairs_paths.get((u, v)) or odd_pairs_paths.get((v, u))
         path = path_info['path']
-        
         for i in range(len(path) - 1):
             n1, n2 = path[i], path[i + 1]
             wt = G[n1][n2]['weight']
             augmented_graph.add_edge(n1, n2, weight=wt)
 
-    # Step 6: Find Eulerian circuit and calculate safe total cost
+    # 6. Find Eulerian circuit and calculate total cost safely
     eulerian_circuit = list(nx.eulerian_circuit(augmented_graph))
     
-    # Safely sum weights across MultiGraph edges
     total_cost = 0
     for u, v in augmented_graph.edges():
-        # MultiGraph edges contain a dictionary of keys mapping to edge attributes
         edge_data = augmented_graph[u][v]
         for key in edge_data:
             total_cost += edge_data[key].get('weight', 0)

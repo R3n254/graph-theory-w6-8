@@ -17,7 +17,7 @@ The project applies these problems to real-world scenarios, including MBG meal d
 
 ## Algorithms
 
-**Travelling Salesman Problem (TSP)**
+###Travelling Salesman Problem (TSP)###
 
 The Travelling Salesman Problem (TSP) finds the shortest closed route that visits every selected school exactly once and returns to the SPPG. This project applies TSP to MBG mealbox delivery in Surabaya using a weighted directed road network, where edge weights represent road distances and may differ by direction.
 
@@ -25,8 +25,8 @@ Dijkstra’s algorithm calculates the shortest road distances between the SPPG a
 
 Algorithms:
 
-Held–Karp (up to 12 schools): Uses dynamic programming to find the optimal tour, with time complexity (O(2^k k^2)).
+**Held–Karp (up to 12 schools)**: Uses dynamic programming to find the optimal tour, with time complexity (O(2^k k^2)).
 
-Nearest Neighbour + 2-opt/Or-opt (larger instances): Builds an initial tour and improves it by rearranging stops. A time-limited search keeps the best tour found.
+**Nearest Neighbour + 2-opt/Or-opt (larger instances)**: Builds an initial tour and improves it by rearranging stops. A time-limited search keeps the best tour found.
 
 The simulator displays the delivery route, visit order, total distance, estimated travel time, and algorithm execution time.

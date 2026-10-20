@@ -4,7 +4,7 @@
 | Name | NRP | Kelas |
 | --- | --- | --- |
 | Ahmad Farras Favian Al Efasi | 5025251005 | IUP |
-| Daniel Pedrosaputra| 5025251... | IUP |
+| Daniel Pedrosaputra| 5025251171 | IUP |
 
 
 ## Introduction

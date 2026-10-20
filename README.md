@@ -58,3 +58,61 @@ Test Configuration:
 <img width="1876" height="856" alt="image" src="https://github.com/user-attachments/assets/200299d3-c8e2-4666-bff0-ef7beba0f598" />
 
 *map showing the selected SPPG location, delivery radius, school locations, and suggested delivery route.*
+
+## How To Run
+
+### Travelling Salesman Problem (TSP) 
+
+## How to Run
+
+### Requirements
+- Python 3.10 or newer
+- Internet connection (the first run downloads the Surabaya road network and school data from OpenStreetMap)
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/<your-username>/<your-repo>.git
+cd <your-repo>
+```
+
+### 2. (Optional) Create a virtual environment
+Windows (PowerShell):
+```powershell
+python -m venv venv
+venv\Scripts\activate
+```
+macOS / Linux:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Start the simulator
+```bash
+python -m streamlit run app.py
+```
+The app opens in your browser at `http://localhost:8501`.
+
+> **First launch:** the app downloads the road network and school locations, which can take a few minutes.
+> The data is saved in the `cache/` folder, so later launches take only seconds. Keep the browser tab open until loading finishes.
+
+### 5. Using the simulator
+1. Click anywhere on the map to place the **SPPG**.
+2. Set the **delivery radius (x km)** with the sidebar slider. Only state (negeri) schools inside the radius are used.
+3. Click **Find TSP route**.
+4. The app shows the route on the map, the school visiting order, total distance, estimated travel time, and solver execution time.
+
+Use **Reset** in the sidebar to clear the SPPG and the route.
+
+### Troubleshooting
+| Problem | Fix |
+|---|---|
+| `streamlit` is not recognized | Run it as `python -m streamlit run app.py` |
+| `pip install` fails | Run `python -m pip install --upgrade pip`, then try again |
+| Data download fails or hangs | Check your internet connection, delete the `cache/` folder, and rerun |
+| `AttributeError` from osmnx | Run `pip install -U osmnx` |

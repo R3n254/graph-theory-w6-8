@@ -33,6 +33,8 @@ The simulator displays the delivery route, visit order, total distance, estimate
 
 ## Implementation and Output
 
+### SPPG Simulator
+
 The SPPG Simulator is implemented in Python using OSMnx, NetworkX, Streamlit, and Folium. OSMnx retrieves Surabaya’s drivable road network and school locations from OpenStreetMap (OSM), while Streamlit and Folium provide an interactive map. Downloaded data is cached locally to reduce repeated downloads.
 
 Users select an SPPG location by clicking the map and set a delivery radius (x) km. Schools within that radius, measured by straight-line distance, are selected and snapped to their nearest road vertices. The road network is represented as a weighted directed graph that accounts for one-way streets. Dijkstra’s algorithm calculates the shortest road distances and constructs a directed distance matrix. The solver then determines the school visiting order using Held–Karp for smaller instances or Nearest Neighbour with local-search improvements for larger instances.
@@ -61,9 +63,8 @@ Test Configuration:
 
 ## How To Run
 
-### Travelling Salesman Problem (TSP) 
+### SPPG Simulator
 
-## How to Run
 
 ### Requirements
 - Python 3.10 or newer

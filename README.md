@@ -70,7 +70,7 @@ Test Configuration:
 - Internet connection (the first run downloads the Surabaya road network and school data from OpenStreetMap)
 
 ### 1. Open the TSP folder
-Download the `tsp-sppg/` folder (or the repository as a ZIP from GitHub and extract it), then open a terminal inside it:
+Download the `tsp-sppg/` folder inside the  `src/task1/` (or the repository as a ZIP from GitHub and extract it), then open a terminal inside it:
 ```bash
 cd tsp-sppg
 ```

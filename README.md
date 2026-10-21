@@ -31,6 +31,21 @@ Algorithms:
 
 The simulator displays the delivery route, visit order, total distance, estimated travel time, and algorithm execution time.
 
+
+### Chinese Postman Problem (CPP)
+
+The Chinese Postman Problem (CPP) finds the shortest closed route that traverses every required road segment at least once and returns to the starting point. This project applies CPP to a dump truck simulator for planning garbage collection routes across trunk, primary, secondary, and tertiary roads in Surabaya.
+
+The road network is represented as a weighted directed multigraph, where vertices represent intersections and edges represent road segments. Edge weights represent road distances, and edge directions account for one-way streets. Since the network may be unbalanced, some road segments must be traversed more than once to form a valid closed route.
+
+Algorithm:
+
+**Minimum-Cost Flow Balancing:** Calculates the additional road traversals required to balance the directed graph while minimizing the extra travel distance.
+
+**Hierholzer’s Algorithm:** Constructs an Euler circuit on the balanced graph, ensuring every required road segment is traversed at least once and the route returns to the starting point.
+
+Checking strong connectivity and constructing the Euler circuit take (O(V+E)) time, where (V) is the number of vertices and (E) is the number of edges. The balancing step uses minimum-cost flow, whose computational cost depends on the network and solver implementation.
+
 ## Implementation and Output
 
 ### SPPG Simulator

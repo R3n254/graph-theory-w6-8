@@ -83,6 +83,7 @@ Test Configuration:
 - Solver execution time: [Result]
 
 <img width="1919" height="905" alt="image" src="https://github.com/user-attachments/assets/a572a808-ecf2-4626-aaa7-9ace29f76a9b" />
+
 *map showing the selected dump truck base location, service radius, road network segments, and the optimized Chinese Postman route.*
 
 ## How To Run

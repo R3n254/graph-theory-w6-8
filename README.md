@@ -251,17 +251,45 @@ source venv/bin/activate
 ```
 ### Knight's Tour Simulator
 
-### Task 3: Knight's Tour
+**Requirements**
+
+- Python 3.x
+- Tkinter (included with the standard Python installer on Windows and macOS)
+
+No extra packages are needed.
+
+**1. Go to the task folder**
 
 ```bash
 cd src/task3
-python knights_tour.py            # console solver
-python knights_tour_visual.py     # animated visualization
 ```
 
-Input (type each line, then press Enter):
+**2. Run the solver**
+
+```bash
+python knights_tour.py
+```
+
+Enter the input when prompted:
 
 ```
-5 5      # columns and rows of the chessboard
-2 2      # starting position of the knight (column, row)
+5 5
+2 2
 ```
+
+| Line | Meaning |
+|------|---------|
+| `5 5` | Columns and rows of the chessboard |
+| `2 2` | Starting position of the knight (column, row) |
+
+The program prints the coordinates the knight visits, one per line, written as `column,row`. If no tour exists, it prints `path not found`.
+
+**3. Run the visualization**
+
+```bash
+python knights_tour_visual.py
+```
+
+Enter the board size and starting position when prompted, for example `5 5` and then `2 2`. A window opens and animates the knight's tour.
+
+> `knights_tour_visual.py` imports the solver, so `knights_tour.py` must be in the same folder. On macOS/Linux, use `python3` instead of `python`.

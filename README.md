@@ -46,6 +46,20 @@ Algorithm:
 
 Checking strong connectivity and constructing the Euler circuit take (O(V+E)) time, where (V) is the number of vertices and (E) is the number of edges. The balancing step uses minimum-cost flow, whose computational cost depends on the network and solver implementation.
 
+### Knight's Tour Problem
+
+The Knight's Tour Problem finds a sequence of knight moves on a chessboard such that the knight visits every square exactly once. This project applies the Knight's Tour to a dynamic chessboard simulator, where the board size and the knight's starting position are given as input.
+
+The chessboard is represented as an undirected graph, where vertices represent squares and edges represent legal knight moves. A Knight's Tour is therefore a Hamiltonian path in this graph, a path that visits every vertex exactly once. Not every board and starting square has a valid tour, so the solver reports `path not found` when none exists.
+
+Algorithms:
+
+**Backtracking:** Builds the tour one move at a time. When the knight reaches a dead end with unvisited squares remaining, it undoes the last move and tries another option. In the worst case, the time complexity is (O(8^N)), where (N) is the number of squares on the board.
+
+**Warnsdorff's Rule:** A heuristic that guides the backtracking search. At each step, the knight moves to the unvisited square with the fewest onward moves, which visits hard-to-reach squares such as corners first. This usually finds a tour with little or no backtracking.
+
+The simulator displays the knight's tour on the chessboard, including the visit order of each square, the current move number, and the coordinates visited in order.
+
 ## Implementation and Output
 
 ### SPPG Simulator

@@ -75,9 +75,10 @@ Test Configuration:
 <img width="1876" height="856" alt="image" src="https://github.com/user-attachments/assets/200299d3-c8e2-4666-bff0-ef7beba0f598" />
 
 *map showing the selected SPPG location, delivery radius, school locations, and suggested delivery route.*
-### CPP Simulator
 
-The CPP Simulator is implemented in Python using OSMnx, NetworkX, Streamlit, and Folium, with a high-performance C++ backend (`cpp_solver`) for intensive graph computations. OSMnx retrieves Surabaya’s drivable road network from OpenStreetMap (OSM), while Streamlit and Folium provide an interactive mapping and control interface. Downloaded data is cached locally to avoid redundant network requests.
+### Dumptruck Simulator
+
+The Dumptruck Simulator CPP is implemented in Python using OSMnx, NetworkX, Streamlit, and Folium. OSMnx retrieves Surabaya’s drivable road network from OpenStreetMap (OSM), while Streamlit and Folium provide an interactive mapping and control interface. Downloaded data is cached locally to avoid redundant network requests.
 
 Users define a zone or target area by selecting boundaries or entering parameters on the map. The road network is extracted as a directed/undirected graph representation. The application identifies required edges, handles odd-degree balancing via the C++ solver module, and computes the optimal postman tour.
 
@@ -158,3 +159,60 @@ Use **Reset** in the sidebar to clear the SPPG and the route.
 | Data download fails or hangs | Check your internet connection, delete the `cache/` folder, and rerun |
 | `AttributeError` from osmnx | Run `pip install -U osmnx` |
 
+### Dump Truck Simulator 
+
+#### Requirements
+- Python 3.10 or newer
+- Internet connection (roads are downloaded from OpenStreetMap the first time you press **Find CPP route**)
+
+#### 1. Open the CPP folder
+Download the `src/task2/` folder (or the repository as a ZIP from GitHub and extract it), then open a terminal inside it:
+```bash
+cd src/task2
+```
+
+#### 2. Create a virtual environment
+Windows (PowerShell):
+```powershell
+python -m venv venv
+venv\Scripts\activate
+```
+macOS / Linux:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+#### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+#### 4. Start the simulator
+```bash
+python -m streamlit run app.py
+```
+The app opens in your browser at `http://localhost:8501`.
+
+> **First route:** the road network around the base (trunk, primary, secondary and tertiary roads) is downloaded the first time you press **Find CPP route**, which can take a few minutes. OSMnx caches it, so later runs are much faster.
+
+#### 5. Using the simulator
+1. Click the map to place the dump truck base, or type its latitude and longitude in the sidebar. The default base is near Tugu Pahlawan.
+2. Set the **radius** (0.5 to 6 km) and the assumed truck speed in the sidebar.
+3. Click **Find CPP route**.
+4. The app shows the route on the map, from blue (start) to red (end). Roads driven a second time are dashed. It also shows the total distance, estimated travel time, solver time, repeated distance, and a table of the street traversal order.
+
+#### 6. (Optional) Run the solver tests
+```bash
+pip install scipy numpy
+python test.py
+```
+The last line should read `ALL TESTS PASSED`.
+
+#### Troubleshooting
+| Problem | Fix |
+|---|---|
+| `streamlit` is not recognized | Run it as `python -m streamlit run app.py` |
+| `pip install` fails | Run `python -m pip install --upgrade pip`, then try again |
+| Road download fails or hangs | Check your internet connection, then press **Find CPP route** again |
+| "Could not compute a route" | Try a larger radius or move the base onto a major road |

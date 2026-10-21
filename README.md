@@ -196,7 +196,57 @@ macOS / Linux:
 python3 -m venv venv
 source venv/bin/activate
 ```
+### Knight's Tour Simulator
 
+The Knight's Tour Simulator is implemented in Python using Tkinter. The solver takes the chessboard size (columns and rows) and the knight's starting position as input, then builds the tour with backtracking guided by Warnsdorff's rule. At each step, the knight moves to the unvisited square with the fewest onward moves, and the search backtracks when it reaches a dead end. If every square can be visited exactly once, the solver returns the full sequence of coordinates. Otherwise, it prints `path not found`.
+
+The resulting tour is shown in two forms. The console prints the coordinates in visiting order, written as `column,row` with `0,0` as the top-left square. The Tkinter window animates the same tour on the chessboard, drawing the knight's path as arrows, marking each square with its move number, and highlighting the current square. The animation can be paused, restarted, skipped to the finished tour, and sped up or slowed down.
+
+Test Configuration:
+
+- Chessboard size: 5 × 5 (25 squares)
+- Starting position: (2, 2)
+- Solver used: Backtracking with Warnsdorff's rule
+- Tour found: Yes
+- Squares visited: 25 of 25
+- Total moves: 24
+- Final position: (4, 0)
+- Solver execution time: [Result]
+
+Console output:
+
+```
+2,2
+3,4
+4,2
+3,0
+1,1
+0,3
+2,4
+4,3
+3,1
+1,0
+0,2
+1,4
+3,3
+4,1
+2,0
+0,1
+1,3
+3,2
+4,4
+2,3
+0,4
+1,2
+0,0
+2,1
+4,0
+```
+
+<img width="585" height="792" alt="image" src="https://github.com/user-attachments/assets/b44bc39a-0bdb-471d-8bcb-1628b6a34975" />
+
+
+*chessboard showing the starting position, the numbered visit order of each square, and the knight's path.*
 #### 3. Install dependencies
 ```bash
 pip install -r requirements.txt

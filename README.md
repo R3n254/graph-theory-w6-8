@@ -116,6 +116,59 @@ Test Configuration:
 
 *map showing the selected dump truck base location, service radius, road network segments, and the optimized Chinese Postman route.*
 
+### Knight's Tour Simulator
+
+The Knight's Tour Simulator is implemented in Python using Tkinter for the visualization. The solver takes the chessboard size (columns and rows) and the knight's starting position as input. The chessboard is represented as a graph, where each square is a vertex and each legal knight move is an edge.
+
+The tour is built with backtracking guided by Warnsdorff's rule. At each step, the knight moves to the unvisited square with the fewest onward moves, which visits hard-to-reach squares such as corners first. If the knight reaches a dead end, the solver undoes the last move and tries another option. If every square is visited exactly once, the solver returns the full sequence of coordinates. Otherwise, it prints `path not found`.
+
+The resulting tour is shown in two ways. The console prints the coordinates in visiting order, written as `column,row` with `0,0` as the top-left square. The Tkinter window animates the same tour on the chessboard, drawing the knight's path as arrows, marking each square with its move number, and highlighting the current square. The animation can be paused, restarted, skipped to the finished tour, and sped up or slowed down.
+
+Test Configuration:
+
+- Chessboard size: 5 × 5 (25 squares)
+- Starting position: (2, 2)
+- Solver used: Backtracking with Warnsdorff's rule
+- Squares visited: 25 of 25
+- Total moves: 24
+- Final position: (4, 0)
+- Solver execution time: [Result]
+
+Console output:
+
+```
+2,2
+3,4
+4,2
+3,0
+1,1
+0,3
+2,4
+4,3
+3,1
+1,0
+0,2
+1,4
+3,3
+4,1
+2,0
+0,1
+1,3
+3,2
+4,4
+2,3
+0,4
+1,2
+0,0
+2,1
+4,0
+```
+
+<img width="585" height="792" alt="image" src="https://github.com/user-attachments/assets/baf309e6-a983-4533-b3b0-bb69adc1627a" />
+
+
+*chessboard showing the starting position, the numbered visit order of each square, and the knight's path.*
+
 ## How To Run
 
 ### SPPG Simulator

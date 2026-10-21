@@ -60,6 +60,31 @@ Test Configuration:
 <img width="1876" height="856" alt="image" src="https://github.com/user-attachments/assets/200299d3-c8e2-4666-bff0-ef7beba0f598" />
 
 *map showing the selected SPPG location, delivery radius, school locations, and suggested delivery route.*
+### CPP Simulator
+
+The CPP Simulator is implemented in Python using OSMnx, NetworkX, Streamlit, and Folium, with a high-performance C++ backend (`cpp_solver`) for intensive graph computations. OSMnx retrieves Surabaya’s drivable road network from OpenStreetMap (OSM), while Streamlit and Folium provide an interactive mapping and control interface. Downloaded data is cached locally to avoid redundant network requests.
+
+Users define a zone or target area by selecting boundaries or entering parameters on the map. The road network is extracted as a directed/undirected graph representation. The application identifies required edges, handles odd-degree balancing via the C++ solver module, and computes the optimal postman tour.
+
+The resulting traversal path is highlighted on the map alongside performance telemetry.
+
+Test Configuration:
+
+- Zone / Region: [Name or coordinates]
+
+- Total edges to traverse: [(k)]
+
+- Solver used: [C++ backend / Python fallback]
+
+- Total route distance: [Result]
+
+- Estimated completion time: [Result]
+
+- Solver execution time: [Result]
+
+<img width="1876" height="856" alt="image" src="[Insert Image Link Here]" />
+
+*map showing the selected area, road network segments, and suggested Chinese Postman route.*
 
 ## How To Run
 
@@ -117,3 +142,4 @@ Use **Reset** in the sidebar to clear the SPPG and the route.
 | `pip install` fails | Run `python -m pip install --upgrade pip`, then try again |
 | Data download fails or hangs | Check your internet connection, delete the `cache/` folder, and rerun |
 | `AttributeError` from osmnx | Run `pip install -U osmnx` |
+

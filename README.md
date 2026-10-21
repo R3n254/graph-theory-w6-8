@@ -251,85 +251,17 @@ source venv/bin/activate
 ```
 ### Knight's Tour Simulator
 
-The Knight's Tour Simulator is implemented in Python using Tkinter. The solver takes the chessboard size (columns and rows) and the knight's starting position as input, then builds the tour with backtracking guided by Warnsdorff's rule. At each step, the knight moves to the unvisited square with the fewest onward moves, and the search backtracks when it reaches a dead end. If every square can be visited exactly once, the solver returns the full sequence of coordinates. Otherwise, it prints `path not found`.
+### Task 3: Knight's Tour
 
-The resulting tour is shown in two forms. The console prints the coordinates in visiting order, written as `column,row` with `0,0` as the top-left square. The Tkinter window animates the same tour on the chessboard, drawing the knight's path as arrows, marking each square with its move number, and highlighting the current square. The animation can be paused, restarted, skipped to the finished tour, and sped up or slowed down.
-
-Test Configuration:
-
-- Chessboard size: 5 × 5 (25 squares)
-- Starting position: (2, 2)
-- Solver used: Backtracking with Warnsdorff's rule
-- Tour found: Yes
-- Squares visited: 25 of 25
-- Total moves: 24
-- Final position: (4, 0)
-- Solver execution time: [Result]
-
-Console output:
-
-```
-2,2
-3,4
-4,2
-3,0
-1,1
-0,3
-2,4
-4,3
-3,1
-1,0
-0,2
-1,4
-3,3
-4,1
-2,0
-0,1
-1,3
-3,2
-4,4
-2,3
-0,4
-1,2
-0,0
-2,1
-4,0
-```
-
-<img width="585" height="792" alt="image" src="https://github.com/user-attachments/assets/b44bc39a-0bdb-471d-8bcb-1628b6a34975" />
-
-
-*chessboard showing the starting position, the numbered visit order of each square, and the knight's path.*
-#### 3. Install dependencies
 ```bash
-pip install -r requirements.txt
+cd src/task3
+python knights_tour.py            # console solver
+python knights_tour_visual.py     # animated visualization
 ```
 
-#### 4. Start the simulator
-```bash
-python -m streamlit run app.py
+Input (type each line, then press Enter):
+
 ```
-The app opens in your browser at `http://localhost:8501`.
-
-> **First route:** the road network around the base (trunk, primary, secondary and tertiary roads) is downloaded the first time you press **Find CPP route**, which can take a few minutes. OSMnx caches it, so later runs are much faster.
-
-#### 5. Using the simulator
-1. Click the map to place the dump truck base, or type its latitude and longitude in the sidebar. The default base is near Tugu Pahlawan.
-2. Set the **radius** (0.5 to 6 km) and the assumed truck speed in the sidebar.
-3. Click **Find CPP route**.
-4. The app shows the route on the map, from blue (start) to red (end). Roads driven a second time are dashed. It also shows the total distance, estimated travel time, solver time, repeated distance, and a table of the street traversal order.
-
-#### 6. (Optional) Run the solver tests
-```bash
-pip install scipy numpy
-python test.py
+5 5      # columns and rows of the chessboard
+2 2      # starting position of the knight (column, row)
 ```
-The last line should read `ALL TESTS PASSED`.
-
-#### Troubleshooting
-| Problem | Fix |
-|---|---|
-| `streamlit` is not recognized | Run it as `python -m streamlit run app.py` |
-| `pip install` fails | Run `python -m pip install --upgrade pip`, then try again |
-| Road download fails or hangs | Check your internet connection, then press **Find CPP route** again |
-| "Could not compute a route" | Try a larger radius or move the base onto a major road |
